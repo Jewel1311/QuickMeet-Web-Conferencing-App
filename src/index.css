@@ -1,3 +1,10 @@
+:root{
+  --primary-color: #393e46;
+  --secondary-color : #282A3A;
+  --button1-color : #69328f;
+  --button2-color : #42855B;
+  --input-color : #5d5d5f;
+}
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,9 +12,78 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--primary-color);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+
+
+
+.custom-form{
+  background-color: var(--secondary-color);
+}
+
+.button1{
+  padding: 10px;
+  background-color: var(--button1-color);
+  border:none;
+  border-radius: 10px;
+  color: white;
+}
+
+.button1:hover{
+  background-color: #532773;
+  color: white;
+}
+
+.button2{
+  padding: 10px;
+  background-color: var(--button2-color);
+  border:none;
+  border-radius: 10px;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+}
+
+.button2:hover{
+  background-color: #336344;
+  color: white;
+}
+
+.logo{
+  color: var(--button1-color);
+}
+
+.txtbg{
+  background-color: var(--input-color);
+  border: none;
+}
+
+.txtbg::placeholder{
+  color:white;
+  opacity: 1;
+}
+
+.txtbg:focus{
+  background-color: var(--input-color);
+  border: none;
+}
+
+.meetidbox{
+  background-color: var(--input-color);
+  width: 100%;
+  border: none;
+  border-radius: 5px 0px 0px 5px;
+  padding:5px;
+}
+.cpybtn{
+  background-color: var(--input-color);
+  color: white;
+  border-radius: 0px 5px 5px 0px;
+  border: none;
 }
