@@ -1,10 +1,15 @@
 import React from 'react'
 import JoinForm from '../components/JoinForm'
+import { useNavigate } from 'react-router-dom'
 
-function JoinRoom() {
+
+function JoinRoom({setData}) {
+  const navigate = useNavigate()
 
   const handleJoin = (data) => {
-    
+    //pass the name and meeting id coming form JoinForm component to MainRoom component
+    setData(data)
+    navigate("/meet");
   }
 
 

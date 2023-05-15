@@ -87,3 +87,75 @@ code {
   border-radius: 0px 5px 5px 0px;
   border: none;
 }
+
+.video-frame{
+  min-height: 150px;
+  position: relative;
+}
+
+.mini-player{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.controls{
+  position: fixed;
+  bottom: 0;
+  height: 10vh;
+  background-color: #464545;
+  z-index: 1;
+  /* opacity: .8; */
+}
+
+.maincontent{
+  margin-bottom: 10vh;
+}
+
+.video-wrapper{
+    position: sticky;
+    top:0;
+    min-height: 350px;
+    background-color: var(--primary-color);
+    z-index: 1;
+}
+.video-player{
+  min-height: 350px;
+}
+
+.chatbox{
+  position: sticky;
+  top:0;
+  height: 70vh;
+  background-color: #616161;
+
+}
+
+
+.chat-head{
+  position: relative;
+  top:0;
+  background-color: #414142;
+  height: 10vh;
+}
+
+.chat-content{
+  overflow-y: auto;
+  height: calc(100% - 20%);
+}
+
+.message-box{
+  position: relative;
+  width: 100%;
+  bottom: 0;
+  height: 10vh;
+  background-color: #414142;
+}
+
+.align-chat{
+  position: fixed;
+  top:0;
+  z-index: 2;
+}
