@@ -16,13 +16,15 @@ function MainRoom({ data }) {
 
   const [showChat, setShowChat] = useState(false)
 
-  const [loaded, setLoaded] = useState(true)
+  const [loaded, setLoaded] = useState(false)
+
+  const [audioTrackState, setAudioTrackState] = useState(false)
+
+  const [videoTrackState, setVideoTrackState] = useState(false)
 
   const localtracks = useRef([]) // set local user audio and video
 
   const localuser = useRef(null)
-
-  const audioTrackState = useRef(true)
 
   const toggleChat = () => {
     showChat ? setShowChat(false) : setShowChat(true)
@@ -136,21 +138,35 @@ function MainRoom({ data }) {
 
     if (videoTrack !== null) {
       videoTrack.play(`${uid}`);
+      videoTrack.setMuted(true)
     }
     if (audioTrack !== null) {
       audioTrack.play()
+      audioTrack.setMuted(true)
     }
   }
 
-
+ //mic controls
   const micButton = async () => {
-    if (audioTrackState.current) {
+    if (audioTrackState) {
       await localtracks.current[0].setMuted(true) //mute the audio 
-      audioTrackState.current = false
+      setAudioTrackState(false)
     }
     else {
       await localtracks.current[0].setMuted(false) //unmute the audio
-      audioTrackState.current = true
+      setAudioTrackState(true)
+    }
+  }
+
+  //camera controls
+  const videoButton = async () => {
+    if (videoTrackState) {
+      await localtracks.current[1].setMuted(true) //mute the audio 
+      setVideoTrackState(false)
+    }
+    else {
+      await localtracks.current[1].setMuted(false) //unmute the audio
+      setVideoTrackState(true)
     }
   }
 
@@ -160,11 +176,11 @@ function MainRoom({ data }) {
     localtracks.current[1].stop();
     localtracks.current[0].close();
     localtracks.current[1].close();
+    document.getElementById(`user-${localuser.current}`).remove();
     await client.leave();
 
-    document.getElementById(`user-${localuser.current}`).remove();
 
-    // navigate("/")
+    navigate("/")
   }
 
 
@@ -190,11 +206,11 @@ function MainRoom({ data }) {
             </div>
           }
           {loaded &&
-            <MeetControls toggleChat={toggleChat} showChat={showChat} closeCall={closeCall} micButton={micButton} />
+            <MeetControls toggleChat={toggleChat} showChat={showChat} closeCall={closeCall} micButton={micButton} 
+            audioState={audioTrackState} videoButton={videoButton} videoState={videoTrackState} />
           }
         </div>
       </div>
-
 
       {showChat && loaded &&
         <div className='col-lg-3 col-md-6 col-12 d-lg-none align-chat'>
