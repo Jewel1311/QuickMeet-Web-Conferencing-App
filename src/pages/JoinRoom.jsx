@@ -3,7 +3,7 @@ import JoinForm from '../components/JoinForm'
 import { useNavigate } from 'react-router-dom'
 
 
-function JoinRoom({setData}) {
+function JoinRoom({setData, error}) {
   const navigate = useNavigate()
 
   const handleJoin = (data) => {
@@ -12,11 +12,15 @@ function JoinRoom({setData}) {
     navigate("/meet");
   }
 
+  
+
 
   return (
     <div className='vh-100 d-flex align-items-center justify-content-center'>
-        <JoinForm handleJoin={handleJoin} />
+      
+        <JoinForm handleJoin={handleJoin} error={error} />
     </div>
+    
   )
 }
 
