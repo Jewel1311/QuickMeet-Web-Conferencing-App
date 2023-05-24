@@ -3,17 +3,18 @@ import VideoFrame from '../components/VideoFrame';
 import MeetControls from '../components/MeetControls';
 import Loading from '../components/Loading';
 import AgoraRTC from 'agora-rtc-sdk-ng';
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { client } from '../AgoraClient';
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from '../firebase';
 
 
 function MainRoom({ data, setErr }) {
-  
+
+
   const navigate = useNavigate()
 
-  const miniPlayerRef = useRef()
+  const miniPlayerRef = useRef(null)
 
   const [loaded, setLoaded] = useState(false)
 
@@ -41,7 +42,6 @@ function MainRoom({ data, setErr }) {
 
   const remoteStreams = {}
 
-  const userNames = {}
 
 
   const app_id = process.env.REACT_APP_ID;
@@ -59,21 +59,23 @@ function MainRoom({ data, setErr }) {
 
   useEffect(() => {
 
-    setErr(null)
-
     const retrieveMeeting = async () => {
       try {
-        const documentRef = doc(db, "meetings", data.channelName );
-    
+        const documentRef = doc(db, "meetings", data.channelName);
+
         // Retrieve the document
         const documentSnapshot = await getDoc(documentRef);
-    
+
         if (documentSnapshot.exists()) {
           // Document exists, extract the data
           const meetingData = documentSnapshot.data();
-    
+
           JoinMeeting(meetingData.token);
-        } 
+        }
+        else{
+          setErr("Invalid Credentials")
+          navigate("/")
+        }
       } catch (error) {
         setErr("Invalid Credentials")
         navigate("/")
@@ -91,9 +93,7 @@ function MainRoom({ data, setErr }) {
 
         let tracks = await AgoraRTC.createMicrophoneAndCameraTracks()
 
-        if(!userNames[UID]){
-          userNames[UID] = data.displayName
-        }
+        await updateMeetingUsers(UID)
 
         //join/publish the local user to the channel
         await client.publish([tracks[0], tracks[1]]);
@@ -119,13 +119,49 @@ function MainRoom({ data, setErr }) {
 
     }
 
-
     retrieveMeeting()
   }, [])
+
+
+  //update usernames when with userid in firebase
+  const updateMeetingUsers = async (uid) => {
+    try {
+      const documentRef = doc(db, "meetings", data.channelName);
+
+      // Retrieve the document data
+      const documentSnapshot = await getDoc(documentRef);
+      const documentData = documentSnapshot.data();
+
+      // Update the users data within the document
+      const updatedUsers = {
+        ...documentData.users,
+      };
+      updatedUsers[uid] = data.displayName
+
+      // Save the updated users data back to Firestore
+      await updateDoc(documentRef, { users: updatedUsers });
+
+    } catch (error) {
+      console.error("Error updating meeting users:", error);
+    }
+  }
+
+
+  const getUserName = async (uid) => {
+    const documentRef = doc(db, "meetings", data.channelName);
+    // Retrieve the document data
+    const documentSnapshot = await getDoc(documentRef);
+    const documentData = documentSnapshot.data();
+    const usersdata = documentData['users']
+
+    return usersdata[uid]
+
+  }
+
   //when a new user joined the user published a video or audio
   client.on("user-published", async (user, mediaType) => {
     try {
-      
+
       await client.subscribe(user, mediaType); //subscribe to the newly published audio/video
 
       if (!remoteStreams[user.uid]) {
@@ -153,6 +189,7 @@ function MainRoom({ data, setErr }) {
   });
 
   client.on("user-joined", (user) => {
+
     createContainer(user.uid);
   })
 
@@ -166,8 +203,11 @@ function MainRoom({ data, setErr }) {
 
 
 
-  const createContainer = (uid) => {
-    if (!document.getElementById(uid)) {
+  const createContainer = async (uid) => {
+
+    const userName = await getUserName(uid)
+
+    if (!document.getElementById(`user-${uid}`)) {
       const parentElement = document.createElement('div');
       const childElement = document.createElement('div');
       const videoElement = document.createElement('video');
@@ -181,7 +221,7 @@ function MainRoom({ data, setErr }) {
       parentElement.id = `user-${uid}`;
       childElement.id = `child-${uid}`;
       videoElement.id = uid;
-      videoText.textContent = uid
+      videoText.textContent = userName
 
       parentElement.addEventListener('click', () => {
         getStream(uid);
@@ -197,7 +237,6 @@ function MainRoom({ data, setErr }) {
   //create a mini player and play audio and video on screen
   const createMiniPlayer = (uid, audioTrack, videoTrack) => {
 
-    console.log("called", videoTrack)
     createContainer(uid)
 
     if (videoTrack !== null) {
@@ -296,7 +335,7 @@ function MainRoom({ data, setErr }) {
         await client.unpublish([screenTrack.current])
         screenTrack.current.stop()
         screenTrack.current.close()
-  
+
         await client.publish([localtracks.current[1]])
 
         screenTrack.current = null
@@ -317,15 +356,16 @@ function MainRoom({ data, setErr }) {
     localtracks.current[1].stop();
     localtracks.current[0].close();
     localtracks.current[1].close();
-    if(screenTrack.current){
+    if (screenTrack.current) {
       screenTrack.current.stop()
       screenTrack.current.close()
     }
     document.getElementById(`user-${localuser.current}`).remove();
     await client.leave();
 
-
+    setErr(null)
     navigate("/")
+    window.location.reload();
   }
 
 
