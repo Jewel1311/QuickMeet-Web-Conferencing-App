@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import VideoFrame from '../components/VideoFrame';
 import MeetControls from '../components/MeetControls';
 import Loading from '../components/Loading';
@@ -57,69 +57,70 @@ function MainRoom({ data, setErr }) {
 
 
 
+  useEffect(() => {
 
-  const retrieveMeeting = async () => {
-    try {
-      const documentRef = doc(db, "meetings", data.channelName);
+    const retrieveMeeting = async () => {
+      try {
+        const documentRef = doc(db, "meetings", data.channelName);
 
-      // Retrieve the document
-      const documentSnapshot = await getDoc(documentRef);
+        // Retrieve the document
+        const documentSnapshot = await getDoc(documentRef);
 
-      if (documentSnapshot.exists()) {
-        // Document exists, extract the data
-        const meetingData = documentSnapshot.data();
+        if (documentSnapshot.exists()) {
+          // Document exists, extract the data
+          const meetingData = documentSnapshot.data();
 
-        JoinMeeting(meetingData.token);
-      }
-      else {
+          JoinMeeting(meetingData.token);
+        }
+        else{
+          setErr("Invalid Credentials")
+          navigate("/")
+        }
+      } catch (error) {
         setErr("Invalid Credentials")
         navigate("/")
       }
-    } catch (error) {
-      setErr("Invalid Credentials")
-      navigate("/")
-    }
-  };
+    };
 
-  async function JoinMeeting(token) {
-    try {
-      // it joins a channel and returns a userid (local user's userid )
-      const UID = await client.join(app_id, data.channelName, token, null)
+    async function JoinMeeting(token) {
+      try {
+        // it joins a channel and returns a userid (local user's userid )
+        const UID = await client.join(app_id, data.channelName, token, null)
 
-      localuser.current = UID
+        localuser.current = UID
 
-      //get the local users audio and video
+        //get the local users audio and video
 
-      let tracks = await AgoraRTC.createMicrophoneAndCameraTracks()
+        let tracks = await AgoraRTC.createMicrophoneAndCameraTracks()
 
-      await updateMeetingUsers(UID)
+        await updateMeetingUsers(UID)
 
-      //join/publish the local user to the channel
-      await client.publish([tracks[0], tracks[1]]);
-      //localtracks[0] contain audio and localtracks[1] contain video 
+        //join/publish the local user to the channel
+        await client.publish([tracks[0], tracks[1]]);
+        //localtracks[0] contain audio and localtracks[1] contain video 
 
 
-      createMiniPlayer(UID, tracks[0], tracks[1]);
+        await createMiniPlayer(UID, tracks[0], tracks[1]);
 
-      localtracks.current = [tracks[0], tracks[1]]
+        localtracks.current = [tracks[0], tracks[1]]
 
-      if (!remoteStreams[UID]) {
-        remoteStreams[UID] = tracks[1];
+        if (!remoteStreams[UID]) {
+          remoteStreams[UID] = tracks[1];
+        }
+
+
+        setLoaded(true)
+
+      } catch (error) {
+        setErr("Unable to join");
+        navigate("/")
+
       }
 
-
-      setLoaded(true)
-
-    } catch (error) {
-      setErr("Unable to join");
-      navigate("/")
-
     }
 
-  }
-
-  retrieveMeeting()
-
+    retrieveMeeting()
+  }, [])
 
 
   //update usernames when with userid in firebase
@@ -180,7 +181,7 @@ function MainRoom({ data, setErr }) {
       if (mediaType === 'audio') {
         remoteUser.remoteAudioTrack = user.audioTrack;
       }
-      createMiniPlayer(remoteUser.UserId, remoteUser.remoteAudioTrack, remoteUser.remoteVideoTrack)
+      await createMiniPlayer(remoteUser.UserId, remoteUser.remoteAudioTrack, remoteUser.remoteVideoTrack)
     } catch (error) {
       console.log(error)
     }
@@ -234,9 +235,9 @@ function MainRoom({ data, setErr }) {
   }
 
   //create a mini player and play audio and video on screen
-  const createMiniPlayer = (uid, audioTrack, videoTrack) => {
+  const createMiniPlayer = async(uid, audioTrack, videoTrack) => {
 
-    createContainer(uid)
+    await createContainer(uid)
 
     if (videoTrack !== null) {
       videoTrack.play(`${uid}`)
