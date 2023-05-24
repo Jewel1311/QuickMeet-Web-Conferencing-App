@@ -14,6 +14,8 @@ function CreateMeet() {
     const agoraToken = useRef(null)
     const snippetRef = useRef(null)
 
+    const url = process.env.REACT_APP_URL
+
     function createMeeting() {
         setCreating(true)
         //produce a random meeting id
@@ -38,7 +40,7 @@ function CreateMeet() {
 
     const generateRtcToken = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/access-token?channelName=${meetid.current}`);
+            const response = await fetch(`${url}/access-token?channelName=${meetid.current}`);
             const data = await response.json();
             agoraToken.current = data.token;
 
@@ -58,49 +60,7 @@ function CreateMeet() {
         setCreating(false)
         
     }   
-        // const updateMeetingUsers = async () => {
-        //     try {
-        //         const documentRef = doc(db, "meetings", meetid.current);
-    
-        //         // Retrieve the document data
-        //         const documentSnapshot = await getDoc(documentRef);
-        //         const documentData = documentSnapshot.data();
-    
-        //         // Update the users data within the document
-        //         const updatedUsers = {
-        //             ...documentData.users,
-        //             "myuserid": "my_username",
-        //         };
-    
-        //         // Save the updated users data back to Firestore
-        //         await updateDoc(documentRef, { users: updatedUsers });
-    
-        //         console.log("Meeting users updated successfully!");
-        //     } catch (error) {
-        //         console.error("Error updating meeting users:", error);
-        //     }
-        // }
-        // };
-
-    // const retrieveMeeting = async () => {
-    //     try {
-    //       const documentRef = doc(db, "meetings", meetid.current);
-      
-    //       // Retrieve the document
-    //       const documentSnapshot = await getDoc(documentRef);
-      
-    //       if (documentSnapshot.exists()) {
-    //         // Document exists, extract the data
-    //         const meetingData = documentSnapshot.data();
-      
-    //         console.log("Meeting data:", meetingData.token);
-    //       } else {
-    //         console.log("Meeting does not exist");
-    //       }
-    //     } catch (error) {
-    //       console.error("Error retrieving meeting:", error);
-    //     }
-    //   };
+     
 
 
     return (
